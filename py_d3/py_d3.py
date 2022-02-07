@@ -83,24 +83,23 @@ requirejs.config({
         code_template += '''});
 
 require(["d3"], function(d3) {
-    window.d3 = d3;
+    let originalSelect = d3.select;
+    d3.select''' + str(self.max_id) + ''' = function(selection) {
+        return originalSelect("#d3-cell-''' + str(self.max_id) + '''").select(selection);
+    }
+    d3.selectAll''' + str(self.max_id) + ''' = function(selection) {
+        return originalSelect("#d3-cell-''' + str(self.max_id) + '''").selectAll(selection);
+    }
 });
-</script>
-<script>
-_select = d3.select;
-
-d3.select''' + str(self.max_id) + ''' = function(selection) {
-    return _select("#d3-cell-''' + str(self.max_id) + '''").select(selection);
-}
-d3.selectAll''' + str(self.max_id) + ''' = function(selection) {
-    return _select("#d3-cell-''' + str(self.max_id) + '''").selectAll(selection);
-}
 </script>
 
 <g id="d3-cell-''' + str(self.max_id) + '''">
         '''
         cell = sub('d3.select\((?!this)', "d3.select" + str(self.max_id) + "(", cell)
         cell = sub('d3.selectAll\((?!this)', "d3.selectAll" + str(self.max_id) + "(", cell)
+        # HACK:
+        cell = cell.replace('<script>', '<script>require(["d3"], function(d3) {')
+        cell = cell.replace('</script>', '});</script>')
         return code_template + cell + "\n</g>"
 
     @property
